@@ -3,10 +3,13 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Drawer.dart';
 import 'package:flutter_app/connectivitychecker.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:flutter_app/RandomColors.dart';
 import 'package:flutter_app/design.dart';
+import 'package:flutter_app/models/ListHold.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_app/models/cloudModel.dart';
+import 'package:flutter_app/providers.dart';
 
 class SettingsScreen extends StatelessWidget {
   final TextEditingController sheetIDController = TextEditingController();
@@ -17,28 +20,31 @@ class SettingsScreen extends StatelessWidget {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text('Settings').whiteText(),
+        title: const Text('Settings').whiteText(),
         backgroundColor: CustomColors.backgroundColor,
         shadowColor: Colors.transparent,
       ),
       backgroundColor: CustomColors.backgroundColor,
       body: Padding(
-        padding: EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+        padding:  EdgeInsets.symmetric(vertical: 5, horizontal: 15),
         child: Column(
+
           children: [
             const Text('Setup Google Sheet Deployment Link',
                 style: TextStyle(fontSize: 20, color: Colors.white)),
             Container(
               height: 200,
+              width: MediaQuery.of(context).size.width ,
               margin: EdgeInsets.only(top: 10),
               child: Card(
                 child: Column(
                   children: [
-                    Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text('Setup Google').whiteText()),
+                    // Align(
+                    //     alignment: Alignment.centerLeft,
+                    //     child: Text('Setup Google').whiteText()),
                     Container(
                       width: MediaQuery.of(context).size.width / 1.5,
+                      margin: EdgeInsets.symmetric(vertical: 5,horizontal: 10),
                       child: CustomTextFormInput(
                         validator: normalValidator,
                         borderColor: Colors.black,
@@ -50,24 +56,39 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     RaisedButton.icon(
                         color: CustomColors.backgroundColor,
-                        onLongPress: () async{
+                        onLongPress: () async {
                           await SheetChecker().remoteSheet();
                           await SheetChecker().removeKey();
                         },
                         onPressed: () async {
                           FocusScope.of(context).unfocus();
-                          await SheetChecker().setSheetID(sheetIDController.text);
+                          bool isListEmpty =
+                              context.read(listStateProvider.state).isEmpty;
+
+                          await SheetChecker()
+                              .setSheetID(sheetIDController.text);
 
                           _scaffoldKey.currentState.showSnackBar(SnackBar(
-                            backgroundColor: Colors.black54,
-                            content: Text('Saved !').whiteText(),
+                            backgroundColor: Colors.black45,
+                            content: Text(isListEmpty
+                                    ? 'Saved!'
+                                    : 'Uploading Local Notes To Sheet')
+                                .whiteText(),
                           ));
+
+                          if (!isListEmpty) {
+                            await CloudNotes().uploadBatchNotes(
+                                context.read(listStateProvider.state));
+                            _scaffoldKey.currentState.showSnackBar(SnackBar(
+                                backgroundColor: Colors.black54,
+                                content: const Text('Uploaded')));
+                          }
                         },
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.cloud,
                           color: Colors.white,
                         ),
-                        label: Text('Save').whiteText())
+                        label: const Text('Save').whiteText())
                   ],
                 ),
               ),

@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_app/models/cloudModel.dart';
 import 'package:flutter_app/design.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_app/main.dart';
 import 'providers.dart';
 import 'package:flutter_riverpod/all.dart';
+import 'package:flutter_app/MainScreen.dart';
 
 class CustomContainer extends StatelessWidget {
   final String _task;
@@ -19,26 +21,37 @@ class CustomContainer extends StatelessWidget {
       this._task, this._color, this._width, this._index, this.dateTime,
       {this.priority});
 
-  void showEditDialog(BuildContext context) {
-    showDialog(
+  updateCloudNote(BuildContext context) async{
+    Map<String,dynamic> dialogResponse =await  showDialog(
         context: context,
         builder: (context) => EditNoteScreen(
-              _index,
-              _task,
-              _color,
-              dateTime,
-              priority: priority,
-            ));
+          _index,
+          _task,
+          _color,
+          dateTime,
+          priority: priority,
+        ));
+    if(!dialogResponse["isOperationCanceled"]){
+      mainScreenScaffoldKey.currentState.context.read(syncProgressProvider).setSyncing();
+      await CloudNotes().updateCloudNote(
+          task: dialogResponse["task"],
+          priority: dialogResponse["priority"],
+            dateTime: dateTime.toString(),
+          index:  dialogResponse["index"],
+          );
+      mainScreenScaffoldKey.currentState.context.read(syncProgressProvider).syncProgressDone();
+    }
+
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onLongPress: () {
-        showEditDialog(context);
+        updateCloudNote(context);
       },
-      onDoubleTap: () {
-        showEditDialog(context);
+      onDoubleTap: () async{
+        updateCloudNote(context);
       },
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
@@ -135,7 +148,11 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
     // loadNotifications();
     noteField.text = widget.note;
   }
-
+@override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
   // loadNotifications() async {
   //   AndroidInitializationSettings androidSettings =
   //       new AndroidInitializationSettings('assests/avatar.jpg');
@@ -148,10 +165,11 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
   Widget build(BuildContext context) {
     // var model = context.read(listProvider);
 
-    print(widget._color);
+
     return Form(
       key: _formKey,
       child: AlertDialog(
+
         backgroundColor: widget._color,
         contentTextStyle: const TextStyle(color: Colors.white),
         title: const Text('Edit Note').whiteText(),
@@ -224,18 +242,21 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                         .read(notesProvider)
                         .updateValueAt(noteField.text, widget.index);
                   }
-                  await CloudNotes().updateCloudNote(
-                      task: noteField.text,
-                      priority: sliderVal.toInt(),
-                      dateTime: widget.dateTime ?? "NO",
-                      index: widget.index + 1,
-                      update: "yes");
-                  Navigator.pop(context);
+
+                  Navigator.pop(context,{
+                    "task": noteField.text,
+                    "priority": sliderVal.toInt(),
+                    "isOperationCanceled" :false,
+                    "index" :widget.index
+                    // "isDateSet" :checkValue,
+                    // "dateTime": _modelDateTime ?? "NO"
+                  });
+
                 }
               },
               child: const Text('update').whiteText()),
           TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(context, {"isOperationCanceled" :true}),
               child: const Text('Cancel').whiteText())
         ],
       ),

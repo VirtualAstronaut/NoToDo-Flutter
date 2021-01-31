@@ -100,7 +100,7 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 //   }
 // }
 
-final scaffoldKey = GlobalKey<ScaffoldState>();
+final mainScreenScaffoldKey = GlobalKey<ScaffoldState>();
 
 class HomePage extends StatefulWidget {
   @override
@@ -165,7 +165,7 @@ class _HomePageState extends State<HomePage>
 
   setUpNotification(String payload) async {
     var tempJSON = json.decode(payload);
-    print(tempJSON["1"][0]);
+
 
     final NotificationDetails platformChannelDetails =
     NotificationDetails(android: notificationDetails);
@@ -208,7 +208,7 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: scaffoldKey,
+      key: mainScreenScaffoldKey,
       drawer: SideDrawer(
         isNotes: false,
       ),
@@ -264,7 +264,7 @@ class _HomePageState extends State<HomePage>
                       // var kek = watch(cloudTodoProvider.stream);
                       var todoList = watch(listStateProvider.state);
                       var progressModel = watch(progressProvider).isDone;
-                      print(progressModel);
+
                       if (!progressModel)
                         return Center(
                             child: CircularProgressIndicator(
@@ -378,7 +378,7 @@ class _AddToDoState extends State<AddToDo> {
 
   setUpNotification(String payload) async {
     var tempJSON = json.decode(payload);
-    print(tempJSON["1"][0]);
+
 
     final NotificationDetails platformChannelDetails =
         NotificationDetails(android: notificationDetails);
@@ -493,10 +493,10 @@ class _AddToDoState extends State<AddToDo> {
               // }
               //
               // Response res;
-              // print('DEGUB');
+
               // print(ConnectivityStatus.isConnected);
               // print(await SheetChecker().isSheetSet());
-              // print('DEGUB');
+
               // if (await SheetChecker().isSheetSet() &&
               //     ConnectivityStatus.isConnected) {
               //   res = await CloudNotes().uploadCloudNote(
