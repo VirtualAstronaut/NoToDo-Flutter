@@ -1,8 +1,11 @@
+
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_app/MainScreen.dart';
 import 'package:flutter_app/NotesScreen.dart';
 import 'package:flutter_app/RandomColors.dart';
 import 'package:flutter_app/SettingsScreen.dart';
+import 'package:flutter_app/models/ListHold.dart';
 import 'design.dart';
 
 class SideDrawer extends StatelessWidget {
@@ -21,9 +24,17 @@ class SideDrawer extends StatelessWidget {
             DrawerHeader(
               curve: Curves.easeIn,
               decoration: BoxDecoration(
-                color: Color(0xFF45AAF0),
+                color: CustomColors.priorityOneColor,
               ),
-              child: Text('kaboom?').whiteCenterText(),
+              child: Container(
+                  alignment: Alignment.bottomLeft,
+                  child: Text(
+                    RandomWords.getRandomWord(),
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                    ),
+                  )),
             ),
             !isNotes
                 ? ListTile(

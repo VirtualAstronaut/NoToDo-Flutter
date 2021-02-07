@@ -10,10 +10,11 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart'
 import 'package:encrypt/encrypt.dart';
 
 class CloudNotes {
-  Future<List<ToDO>> getNotes(String sheetID) async {
+  Future<List<ToDo>> getNotes(String sheetID) async {
     Dio dio = Dio();
     var encStringOfToDos = await dio.get(sheetID);
-    List<ToDO> todoList = await getDecryptedToDos(encStringOfToDos.data);
+    List<ToDo> todoList = await getDecryptedToDos(encStringOfToDos.data);
+    todoList.sort((todoA,todoB) => todoB.priority.compareTo(todoA.priority));
     return todoList;
   }
 
@@ -40,7 +41,7 @@ class CloudNotes {
   uploadCloudNote({
     String task,
     int priority,
-    String dateTime,
+    String dateTime, int index,
   }) async {
     Dio dio = Dio();
     Response response;
@@ -48,7 +49,8 @@ class CloudNotes {
     response = await dio.post(
       await SheetChecker().getSheetID(),
       data: FormData.fromMap({
-        "operationType": "batchAppend",
+        "operationType": "insert",
+        "index" : index,
         "encData": await getEncryptedString(task, priority, dateTime)
       }),
       options: Options(
@@ -92,12 +94,12 @@ class CloudNotes {
     final decrypt = Encrypter(AES(
       key,
     ));
-    List<ToDO> listTodo = [];
+    List<ToDo> listTodo = [];
     for (int i = 0; i < encToDos.length; i++) {
       String jsonString =
           decrypt.decrypt(Encrypted.fromBase64(encToDos[i.toString()]), iv: iv);
       Map<String, dynamic> todoMap = json.decode(jsonString);
-      listTodo.add(ToDO(
+      listTodo.add(ToDo(
           todoMap["task"],
           todoMap["priority"],
           todoMap["dateTime"] != "NO"
@@ -107,7 +109,7 @@ class CloudNotes {
     return listTodo;
   }
 
-  Future<Response> uploadBatchNotes(List<ToDO> todoList) async {
+  Future<Response> uploadBatchNotes(List<ToDo> todoList) async {
     List<String> encNotes = [];
     for (int i = 0; i < todoList.length; i++) {
       encNotes.add(await getEncryptedString(
@@ -133,5 +135,36 @@ class CloudNotes {
     );
 
     return response;
+  }
+
+ Future<void> syncLocalNotesWithCloud(List<ToDo> localToDos) async{
+   var encStringOfToDos= await Dio().get(await SheetChecker().getSheetID());
+   List<ToDo> cloudToDoList = await getDecryptedToDos(encStringOfToDos.data);
+   if(cloudToDoList.length < localToDos.length){
+     for(int i = 0; i < localToDos.length;i++){
+       if(cloudToDoList[i] != null){
+         bool ifNotIdentical =  identical(cloudToDoList[i], localToDos[i]);
+         if(!ifNotIdentical) cloudToDoList.add(localToDos[i]);
+       }
+       else{
+         break;
+       }
+     }
+     await CloudNotes().uploadBatchNotes(cloudToDoList);
+   }
+
+  }
+
+  deleteAtIndex(int index) async {
+    Dio dio = Dio();
+  await dio.post(await SheetChecker().getSheetID(),data:
+   FormData.fromMap( {"operationType" : "delete", "index" :index + 1}),
+      options: Options(
+      followRedirects: true,
+      validateStatus: (status) {
+        return status < 500;
+      },
+    ),);
+
   }
 }

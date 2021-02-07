@@ -28,10 +28,14 @@ class SheetChecker {
 
 }
 class ConnectivityStatus {
-  static bool isConnected = false;
+  static bool isConnected = true;
 
   static void setConnectivityStatus() {
-    isConnected =true;
+    isConnected = true;
+  }
+
+  static void setDisconnectedConnectivity() {
+    isConnected = false;
   }
 
 }

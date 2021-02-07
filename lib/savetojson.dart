@@ -1,16 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/material.dart';
+
 import 'package:flutter_app/models/ListHold.dart';
-import 'package:flutter_app/main.dart';
+
 import 'package:path_provider/path_provider.dart';
-import 'providers.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 
 class SaveToLocal {
   Map _todoListJson = Map<String, dynamic>();
   Map get todoListJson => _todoListJson;
-  Future<void> save(List<ToDO> listOfToDos) async {
+  Future<void> save(List<ToDo> listOfToDos) async {
     await writeToJSON(convertToJson(listOfToDos));
   }
 
@@ -38,7 +37,7 @@ class SaveToLocal {
     return file.writeAsString(jsonVar);
   }
 
-   convertToJson(List<ToDO> tempList)  {
+   convertToJson(List<ToDo> tempList)  {
     var jsonMap = Map<String, dynamic>();
     for (int i = 0; i < tempList.length; i++) {
       jsonMap[i.toString()] = [

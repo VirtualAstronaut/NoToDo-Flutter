@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_app/models/cloudModel.dart';
 import 'package:flutter_app/design.dart';
+import 'package:flutter_app/savetojson.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_app/main.dart';
 import 'providers.dart';
@@ -17,106 +18,116 @@ class CustomContainer extends StatelessWidget {
   final double _width;
   final int _index;
   final dynamic dateTime;
-  CustomContainer(
+  const CustomContainer(
       this._task, this._color, this._width, this._index, this.dateTime,
       {this.priority});
 
-  updateCloudNote(BuildContext context) async{
-    Map<String,dynamic> dialogResponse =await  showDialog(
+  updateCloudNote(BuildContext context) async {
+    Map<String, dynamic> dialogResponse = await showDialog(
         context: context,
         builder: (context) => EditNoteScreen(
-          _index,
-          _task,
-          _color,
-          dateTime,
-          priority: priority,
-        ));
-    if(!dialogResponse["isOperationCanceled"]){
-      mainScreenScaffoldKey.currentState.context.read(syncProgressProvider).setSyncing();
+              _index,
+              _task,
+              _color,
+              dateTime,
+              priority: priority,
+            ));
+    if (dialogResponse != null) {
+      mainScreenScaffoldKey.currentState.context
+          .read(syncProgressProvider)
+          .setSyncing();
+      await SaveToLocal().save(context.read(listStateProvider.state));
       await CloudNotes().updateCloudNote(
-          task: dialogResponse["task"],
-          priority: dialogResponse["priority"],
-            dateTime: dateTime.toString(),
-          index:  dialogResponse["index"],
-          );
-      mainScreenScaffoldKey.currentState.context.read(syncProgressProvider).syncProgressDone();
+        task: dialogResponse["task"],
+        priority: dialogResponse["priority"],
+        dateTime: dateTime.toString(),
+        index: dialogResponse["index"],
+      );
+      mainScreenScaffoldKey.currentState.context
+          .read(syncProgressProvider)
+          .syncProgressDone();
     }
-
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onLongPress: () {
-        updateCloudNote(context);
-      },
-      onDoubleTap: () async{
-        updateCloudNote(context);
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-        decoration: BoxDecoration(
-            color: _color,
-            boxShadow: [
-              BoxShadow(
-                  color: Colors.black.withOpacity(.6),
-                  spreadRadius: 0.01,
-                  blurRadius: 25,
-                  offset: Offset(10, 10))
-            ],
-            borderRadius: const BorderRadius.all(
-              Radius.circular(10),
-            )),
-        child: Column(
-          children: [
-            Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                    border: Border.all(color: Colors.transparent),
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        topRight: Radius.circular(10))),
-                width: _width,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        _task,
-                        style:
-                            const TextStyle(fontSize: 25, color: Colors.white),
-                      ),
-                    ),
-                    // IconButton(
-                    //   icon: Icon(
-                    //     Icons.delete,
-                    //     color: Colors.white,
-                    //   ),
-                    //   onPressed: () {
-                    //     if(priority != null){
-                    //     context.read(listProvider).removeValue(_index);
-                    //     SaveToLocal().save();
-                    //     }
-                    //     else{
-                    //       context.read(notesProvider).removeValueAt(_index);
-                    //     }
-                    //   },
-                    // )
-                  ],
-                )),
-            Container(
-                padding: EdgeInsets.only(bottom: 10, left: 10),
-                alignment: Alignment.centerLeft,
-                child: priority != null
-                    ? Text(
-                        "Priority " + priority.toString(),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+        child: InkWell(
+          radius: 10,
+          splashColor: Colors.white54,
+          onLongPress: () {
+            updateCloudNote(context);
+          },
+          onDoubleTap: () async {
+            updateCloudNote(context);
+          },
+          child: Ink(
+            decoration: BoxDecoration(
+                color: _color,
+                boxShadow: [
+                  const BoxShadow(
+                      color: Colors.black54,
+                      spreadRadius: 0.01,
+                      blurRadius: 25,
+                      offset: Offset(10, 10))
+                ],
+                borderRadius: BorderRadius.circular(10)),
+            child: Column(
+              children: [
+                Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                        border: Border.all(color: Colors.transparent),
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(10),
+                            topRight: Radius.circular(10))),
+                    width: _width,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _task,
+                            style: const TextStyle(
+                                fontSize: 25, color: Colors.white),
+                          ),
                         ),
-                      )
-                    : Container())
-          ],
+                        // IconButton(
+                        //   icon: Icon(
+                        //     Icons.delete,
+                        //     color: Colors.white,
+                        //   ),
+                        //   onPressed: () {
+                        //     if(priority != null){
+                        //     context.read(listProvider).removeValue(_index);
+                        //     SaveToLocal().save();
+                        //     }
+                        //     else{
+                        //       context.read(notesProvider).removeValueAt(_index);
+                        //     }
+                        //   },
+                        // )
+                      ],
+                    )),
+                Container(
+                    padding: EdgeInsets.only(bottom: 10, left: 10),
+                    alignment: Alignment.centerLeft,
+                    child: priority != null
+                        ? Text(
+                            "Priority " + priority.toString(),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Container())
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -148,7 +159,8 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
     // loadNotifications();
     noteField.text = widget.note;
   }
-@override
+
+  @override
   void dispose() {
     // TODO: implement dispose
     super.dispose();
@@ -165,11 +177,9 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
   Widget build(BuildContext context) {
     // var model = context.read(listProvider);
 
-
     return Form(
       key: _formKey,
       child: AlertDialog(
-
         backgroundColor: widget._color,
         contentTextStyle: const TextStyle(color: Colors.white),
         title: const Text('Edit Note').whiteText(),
@@ -243,20 +253,20 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                         .updateValueAt(noteField.text, widget.index);
                   }
 
-                  Navigator.pop(context,{
+                  Navigator.pop(context, {
                     "task": noteField.text,
                     "priority": sliderVal.toInt(),
-                    "isOperationCanceled" :false,
-                    "index" :widget.index
+                    "isOperationCanceled": false,
+                    "index": widget.index
                     // "isDateSet" :checkValue,
                     // "dateTime": _modelDateTime ?? "NO"
                   });
-
                 }
               },
               child: const Text('update').whiteText()),
           TextButton(
-              onPressed: () => Navigator.pop(context, {"isOperationCanceled" :true}),
+              onPressed: () =>
+                  Navigator.pop(context),
               child: const Text('Cancel').whiteText())
         ],
       ),

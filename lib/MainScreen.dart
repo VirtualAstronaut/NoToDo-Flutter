@@ -1,19 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_app/connectivitychecker.dart';
-import 'package:flutter_app/customtriangle.dart';
+
 import 'package:flutter_app/models/ListHold.dart';
 
 import 'animatedcolors.dart';
 import 'providers.dart';
-import 'package:dio/dio.dart';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
 import 'package:flutter_app/CustomContainers.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter_app/Drawer.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart'
-    as fluttersecurestorage;
+
 import 'package:flutter_app/RandomColors.dart';
 import 'package:flutter_app/models/cloudModel.dart';
 import 'package:flutter_app/main.dart';
@@ -123,8 +122,7 @@ class _HomePageState extends State<HomePage>
 
   @override
   void initState() {
-    super.initState();
-
+    if (!context.read(progressProvider).isDone) getDataAsync();
     animationController =
         AnimationController(vsync: this, duration: Duration(seconds: 3))
           ..repeat(
@@ -133,13 +131,30 @@ class _HomePageState extends State<HomePage>
 
     animColors = AnimatedColors.circleColor.animate(animationController);
     Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-      ConnectivityStatus.setConnectivityStatus();
-    });
-    if (!context.read(progressProvider).isDone) getDataAsync();
-  }
+      if(result == ConnectivityResult.none){
+      ConnectivityStatus.setDisconnectedConnectivity();}
+      else{
 
+        if (ConnectivityStatus.isConnected){
+          ConnectivityStatus.setConnectivityStatus();
+        print('kekekkekekeee');
+      syncWithCloud();
+      }
+
+      }
+    });
+    super.initState();
+
+  }
+  Future<void>syncWithCloud()async{
+
+    await  CloudNotes().syncLocalNotesWithCloud(
+      context.read(listStateProvider.state)
+    );
+  }
   Future<void> getDataAsync() async {
     final sheetChecker = SheetChecker();
+    print(ConnectivityStatus.isConnected);
     if (await sheetChecker.isSheetSet() &&
         ConnectivityStatus.isConnected) {
       var todoList =
@@ -151,10 +166,11 @@ class _HomePageState extends State<HomePage>
         context.read(progressProvider).setProgress();
       });
       if (localMapList != null) {
-        List<ToDO> todoList;
+        List<ToDo> todoList;
         todoList = localMapList.entries.map((element) {
-          return ToDO(element.value[0], element.value[1], element.value[2]);
+          return ToDo(element.value[0], element.value[1], element.value[2]);
         }).toList();
+        todoList.sort((todoA,todoB) => todoB.priority.compareTo(todoA.priority));
         context.read(listStateProvider).addBatch(todoList);
       } else {
         context.read(progressProvider).setProgress();
@@ -178,7 +194,7 @@ class _HomePageState extends State<HomePage>
     DateTime _modelDateTime = context.read(dateTimeProvider).dateTime;
 
   final model = context.read(listStateProvider);
-    model.addValue(task, priority,
+   int index=  model.addValue(task, priority,
         _modelDateTime ?? "NO");
 
     await SaveToLocal().save(model.todoList);
@@ -195,6 +211,7 @@ class _HomePageState extends State<HomePage>
     if (await SheetChecker().isSheetSet() &&
         ConnectivityStatus.isConnected) {
        await CloudNotes().uploadCloudNote(
+         index: index +1 ,
           task:task,
           priority: priority,
           dateTime: _modelDateTime != null
@@ -245,12 +262,14 @@ class _HomePageState extends State<HomePage>
           onPressed: () async {
             Map<String, dynamic> alertdataMap =
                 await showDialog(context: context, builder: (con) => AddToDo());
-            String task = alertdataMap["task"];
-            int priority = alertdataMap["priority"];
-            bool isDateSet = alertdataMap["isDateSet"];
-             dynamic dateTime = alertdataMap["dateTime"];
+            if (alertdataMap != null) {
+              String task = alertdataMap["task"];
+              int priority = alertdataMap["priority"];
+              bool isDateSet = alertdataMap["isDateSet"];
+               dynamic dateTime = alertdataMap["dateTime"];
+              await saveToLocalorCloud(task,priority,dateTime,isDateSet);
+            }
 
-             await saveToLocalorCloud(task,priority,dateTime,isDateSet);
           }),
       body: Column(
         children: [
@@ -313,10 +332,10 @@ class _HomePageState extends State<HomePage>
                                       dismissThresholds: {
                                         DismissDirection.endToStart: 0.5
                                       },
-                                      onDismissed: (direction) {
-                                        setState(() {
-                                          items.removeAt(index);
-                                        });
+                                      onDismissed: (direction) async{
+                                        todoList.removeAt(index);
+                                        context.read(listStateProvider).removeValue(index);
+                                        await CloudNotes().deleteAtIndex(index);
                                       },
                                       child: CustomContainer(
                                         todoList[index].task,
@@ -339,7 +358,7 @@ class _HomePageState extends State<HomePage>
                           child: Text('nothing'),
                         );
                       }
-                      return Container();
+
                     }),
                   ),
                 ],
@@ -372,8 +391,6 @@ class _AddToDoState extends State<AddToDo> {
 
   final String randomWord = RandomWords.getRandomWord();
   bool checkValue = false;
-  DateTime _selectedDate;
-
   final _formKey = GlobalKey<FormState>();
 
   setUpNotification(String payload) async {

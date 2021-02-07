@@ -1,17 +1,17 @@
-import 'dart:convert';
+
 import 'dart:core';
-import 'dart:io';
+
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/all.dart';
-import 'package:path_provider/path_provider.dart';
 
-class ToDO {
+
+class ToDo {
   String task;
   int priority;
   var dateTime;
-   ToDO(this.task, this.priority, this.dateTime);
-  ToDO.fromJson(Map<String, dynamic> json) {
+  ToDo(this.task, this.priority, this.dateTime);
+  ToDo.fromJson(Map<String, dynamic> json) {
     task = json['task'];
     priority = json['priority'];
     dateTime = json['dateTime'];
@@ -25,12 +25,12 @@ class ToDO {
   }
 }
 
-class MyList extends StateNotifier<List<ToDO>> {
-   List<ToDO> _todoList = [];
+class MyList extends StateNotifier<List<ToDo>> {
+  List<ToDo> _todoList = [];
 
   MyList() : super([]);
 
-    List<ToDO> get todoList => _todoList;
+  List<ToDo> get todoList => _todoList;
   // static List<String> _myList = [];
   // static List<int> _priority = [];
   // static List<String> _todoType = [];
@@ -64,37 +64,39 @@ class MyList extends StateNotifier<List<ToDO>> {
     return "NO";
   }
 
-  addValue(String task, int priority, dynamic val) {
-    state = [...state, ToDO(task, priority, val)];
-    _todoList.add(ToDO(task, priority, val));
-    // _myList.add(task);
-    // _priority.add(priority);
-    // _dateTime.add(val);
+  int addValue(String task, int priority, dynamic val) {
+    // state = [...state, To(task, priority, val)];
+
+    List<ToDo> tempList = state;
+    int index = 0;
+    if (tempList.isNotEmpty) {
+      bool ifSamePriorityElementExists =
+          tempList.indexWhere((element) => element.priority == priority) != -1;
+      if (ifSamePriorityElementExists) {
+        index = tempList.indexWhere((element) => element.priority == priority);
+        tempList.insert(
+          index ,
+            ToDo(task, priority, val));
+      } else {
+        index = tempList.indexWhere(
+                (element) => element.priority < priority);
+        bool isPriorityHigher = tempList.lastIndexWhere((element) => element.priority < priority ) != -1;
+        print(isPriorityHigher);
+        tempList.insert(
+            priority == 5 ? 0 : index ,
+            ToDo(task, priority, "NO"));
+      }
+    } else {
+      tempList.add(ToDo(task, priority, "NO"));
+    }
+    print (index);
+    state = tempList;
+  return index;
   }
-
-  // sortByPriority() {
-  //   bool swap = false;
-  //   while (!swap) {
-  //     swap = true;
-  //     for (int i = 0; i < myList.length - 1; i++) {
-  //       if (priority[i] < priority[i + 1]) {
-  //         int temp = priority[i];
-  //         priority[i] = priority[i + 1];
-  //         priority[i + 1] = temp;
-  //         String kek = myList[i];
-  //         myList[i] = myList[i + 1];
-  //         myList[i + 1] = kek;
-  //         swap = false;
-  //       }
-  //     }
-  //   }
-  //   notifyListeners();
-  // }
-
-  addBatch(List<ToDO> todoList) {
+  addBatch(List<ToDo> todoList) {
     for (int i = 0; i < todoList.length; i++) {
       _todoList.add(
-          ToDO(todoList[i].task, todoList[i].priority, todoList[i].dateTime));
+          ToDo(todoList[i].task, todoList[i].priority, todoList[i].dateTime));
 
       // if (todoList[i].dateTime != "NO") {
       //   DateTime temp = DateTime.parse(todoList[i].dateTime);
@@ -107,28 +109,27 @@ class MyList extends StateNotifier<List<ToDO>> {
       // }
     }
     state = _todoList;
-    // notifyListeners();
-  }
 
-  getLists() async {
-    return _todoList;
   }
 
   removeValue(int index) {
-    List<ToDO> _temp = state;
+    List<ToDo> _temp = state;
     _temp.removeAt(index);
     state = _temp;
-
     // notifyListeners();
   }
 
-  updateValue(int index, String newTask, int newPriority) {
-    var tempVal = _todoList[index].dateTime;
-    List<ToDO> _temp = state;
-    _temp[index] = ToDO(newTask, newPriority, tempVal);
+  updateValue(int index, String task, int priority) {
+    // var tempVal = _todoList[index].dateTime;
+    List<ToDo> _temp = state;
+    _temp.removeAt(index);
+    _temp.insert(index, ToDo(task, priority, "NO"));
+    _temp.sort((todoA, todoB) => todoB.priority.compareTo(todoA.priority));
+
     state = [..._temp];
-    state[index] = ToDO(newTask, newPriority, tempVal);
   }
+
+  static sortList() {}
 }
 
 class RandomWords {
