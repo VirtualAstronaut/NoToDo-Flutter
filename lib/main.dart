@@ -3,13 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import 'MainScreen.dart';
-import 'package:flutter_app/savetojson.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:liquid_ui/liquid_ui.dart';
-
-import 'package:riverpod/all.dart';
-
 void main() {
   runApp(ProviderScope(child: MyApp()));
 }

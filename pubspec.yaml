@@ -36,6 +36,7 @@ dependencies:
   dio: ^3.0.10
   flutter_secure_storage: ^3.3.5
   connectivity: ^2.0.2
+  animations: ^1.1.2
 
   rename: ^1.2.0
 

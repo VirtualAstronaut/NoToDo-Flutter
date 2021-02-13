@@ -1,15 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-
-import 'package:flutter_app/models/cloudModel.dart';
 import 'package:flutter_app/design.dart';
-import 'package:flutter_app/savetojson.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_app/main.dart';
 import 'providers.dart';
 import 'package:flutter_riverpod/all.dart';
-import 'package:flutter_app/MainScreen.dart';
 
 class CustomContainer extends StatelessWidget {
   final String _task;
@@ -33,19 +29,11 @@ class CustomContainer extends StatelessWidget {
               priority: priority,
             ));
     if (dialogResponse != null) {
-      mainScreenScaffoldKey.currentState.context
-          .read(syncProgressProvider)
-          .setSyncing();
-      await SaveToLocal().save(context.read(listStateProvider.state));
-      await CloudNotes().updateCloudNote(
-        task: dialogResponse["task"],
-        priority: dialogResponse["priority"],
-        dateTime: dateTime.toString(),
-        index: dialogResponse["index"],
-      );
-      mainScreenScaffoldKey.currentState.context
-          .read(syncProgressProvider)
-          .syncProgressDone();
+      context.read(syncProvider).updateToDo(
+          priority: dialogResponse["priority"],
+          index: dialogResponse["index"],
+          task: dialogResponse["task"],
+          dateTime: "NO");//TODO:add Logic for DateTime
     }
   }
 
@@ -160,11 +148,6 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
     noteField.text = widget.note;
   }
 
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-  }
   // loadNotifications() async {
   //   AndroidInitializationSettings androidSettings =
   //       new AndroidInitializationSettings('assests/avatar.jpg');
@@ -175,8 +158,6 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // var model = context.read(listProvider);
-
     return Form(
       key: _formKey,
       child: AlertDialog(
@@ -242,7 +223,7 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
         actions: [
           TextButton(
               onPressed: () async {
-                var sliderVal = context.read(sliderProvider).sliderValue;
+                final sliderVal = context.read(sliderProvider).sliderValue;
                 if (_formKey.currentState.validate()) {
                   if (widget.priority != null) {
                     context.read(listStateProvider).updateValue(
@@ -259,14 +240,13 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                     "isOperationCanceled": false,
                     "index": widget.index
                     // "isDateSet" :checkValue,
-                    // "dateTime": _modelDateTime ?? "NO"
+                    //  "dateTime": _modelDateTime ?? "NO"
                   });
                 }
               },
               child: const Text('update').whiteText()),
           TextButton(
-              onPressed: () =>
-                  Navigator.pop(context),
+              onPressed: () => Navigator.pop(context),
               child: const Text('Cancel').whiteText())
         ],
       ),

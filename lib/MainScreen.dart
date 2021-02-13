@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:animations/animations.dart';
 import 'package:flutter_app/connectivitychecker.dart';
 
 import 'package:flutter_app/models/ListHold.dart';
@@ -99,7 +100,7 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 //   }
 // }
 
-final mainScreenScaffoldKey = GlobalKey<ScaffoldState>();
+
 
 class HomePage extends StatefulWidget {
   @override
@@ -111,6 +112,12 @@ class _HomePageState extends State<HomePage>
   var listenFalseModel;
   AnimationController animationController;
   Animation<Color> animColors;
+
+  @override
+  void didChangeDependencies() {
+    context.dependOnInheritedWidgetOfExactType();
+    super.didChangeDependencies();
+  }
 
   Future<Map<String, dynamic>> getData(BuildContext context) async {
     var data;
@@ -131,101 +138,67 @@ class _HomePageState extends State<HomePage>
 
     animColors = AnimatedColors.circleColor.animate(animationController);
     Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-      if(result == ConnectivityResult.none){
-      ConnectivityStatus.setDisconnectedConnectivity();}
-      else{
-
-        if (ConnectivityStatus.isConnected){
+      if (result == ConnectivityResult.none) {
+        ConnectivityStatus.setDisconnectedConnectivity();
+      } else {
+        if (ConnectivityStatus.isConnected) {
           ConnectivityStatus.setConnectivityStatus();
-        print('kekekkekekeee');
-      syncWithCloud();
-      }
-
+          print('kekekkekekeee');
+          syncWithCloud();
+        }
       }
     });
     super.initState();
-
   }
-  Future<void>syncWithCloud()async{
 
-    await  CloudNotes().syncLocalNotesWithCloud(
-      context.read(listStateProvider.state)
-    );
+  Future<void> syncWithCloud() async {
+    await CloudNotes()
+        .syncLocalNotesWithCloud(context.read(listStateProvider.state));
   }
+
   Future<void> getDataAsync() async {
     final sheetChecker = SheetChecker();
-    print(ConnectivityStatus.isConnected);
-    if (await sheetChecker.isSheetSet() &&
-        ConnectivityStatus.isConnected) {
-      var todoList =
+    if (await sheetChecker.isSheetSet() && ConnectivityStatus.isConnected) {
+      final todoList =
           await CloudNotes().getNotes(await sheetChecker.getSheetID());
       context.read(listStateProvider).addBatch(todoList);
     } else {
-      var localMapList =
-          await SaveToLocal().readFromStorage().catchError((onError) {
-        context.read(progressProvider).setProgress();
-      });
+      final localMapList = await SaveToLocal().readFromStorage().catchError(
+          (onError) => context.read(progressProvider).setProgress());
       if (localMapList != null) {
         List<ToDo> todoList;
         todoList = localMapList.entries.map((element) {
           return ToDo(element.value[0], element.value[1], element.value[2]);
         }).toList();
-        todoList.sort((todoA,todoB) => todoB.priority.compareTo(todoA.priority));
+        todoList
+            .sort((todoA, todoB) => todoB.priority.compareTo(todoA.priority));
         context.read(listStateProvider).addBatch(todoList);
-      } else {
-        context.read(progressProvider).setProgress();
       }
     }
     context.read(progressProvider).setProgress();
   }
 
-  setUpNotification(String payload) async {
-    var tempJSON = json.decode(payload);
-
-
-    final NotificationDetails platformChannelDetails =
-    NotificationDetails(android: notificationDetails);
-    await flutterLocalNotificationsPlugin.show(
-        tempJSON["1"][1], "ToDo", tempJSON["1"][0], platformChannelDetails);
-  }
-
-  Future<void> saveToLocalorCloud(String task, int priority, dateTime, bool tobeShownNotification,) async{
-    context.read(syncProgressProvider).setSyncing();
+  Future<void> saveToLocalorCloud(
+    String task,
+    int priority,
+    dateTime,
+    bool tobeShownNotification,
+  ) async {
     DateTime _modelDateTime = context.read(dateTimeProvider).dateTime;
-
-  final model = context.read(listStateProvider);
-   int index=  model.addValue(task, priority,
-        _modelDateTime ?? "NO");
-
-    await SaveToLocal().save(model.todoList);
-
-
-    if (tobeShownNotification) {
-      var jsonVar = {
-        "1": [task, model.todoList.length - 1]
-      };
-      String temp = json.encode(jsonVar);
-      setUpNotification(temp);
-    }
-
-    if (await SheetChecker().isSheetSet() &&
-        ConnectivityStatus.isConnected) {
-       await CloudNotes().uploadCloudNote(
-         index: index +1 ,
-          task:task,
-          priority: priority,
-          dateTime: _modelDateTime != null
-              ? _modelDateTime.toString()
-              : "NO");
-    }
-
-    context.read(dateTimeProvider).resetDate();
-    context.read(syncProgressProvider).syncProgressDone();
+    final listProvider = context.read(listStateProvider);
+    int index = listProvider.addValue(task, priority, _modelDateTime ?? "NO");
+    final syncProviderVar = context.read(syncProvider);
+     await syncProviderVar.uploadToDo(
+        priority: priority,
+        task: task,
+        index: index,
+        modelDateTime: _modelDateTime,
+        tobeShownNotification: tobeShownNotification);
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: mainScreenScaffoldKey,
       drawer: SideDrawer(
         isNotes: false,
       ),
@@ -235,7 +208,7 @@ class _HomePageState extends State<HomePage>
         shadowColor: Colors.transparent,
         title: Consumer(
           builder: (context, watch, child) {
-            var syncProgress = watch(syncProgressProvider.state);
+            final syncProgress = watch(syncProvider.state);
             if (!syncProgress) {
               return const Text('To-Do List');
             } else {
@@ -266,10 +239,9 @@ class _HomePageState extends State<HomePage>
               String task = alertdataMap["task"];
               int priority = alertdataMap["priority"];
               bool isDateSet = alertdataMap["isDateSet"];
-               dynamic dateTime = alertdataMap["dateTime"];
-              await saveToLocalorCloud(task,priority,dateTime,isDateSet);
+              dynamic dateTime = alertdataMap["dateTime"];
+              await saveToLocalorCloud(task, priority, dateTime, isDateSet);
             }
-
           }),
       body: Column(
         children: [
@@ -281,9 +253,8 @@ class _HomePageState extends State<HomePage>
                   Expanded(
                     child: Consumer(builder: (context, watch, child) {
                       // var kek = watch(cloudTodoProvider.stream);
-                      var todoList = watch(listStateProvider.state);
-                      var progressModel = watch(progressProvider).isDone;
-
+                      final todoList = watch(listStateProvider.state);
+                      final progressModel = watch(progressProvider).isDone;
                       if (!progressModel)
                         return Center(
                             child: CircularProgressIndicator(
@@ -332,9 +303,10 @@ class _HomePageState extends State<HomePage>
                                       dismissThresholds: {
                                         DismissDirection.endToStart: 0.5
                                       },
-                                      onDismissed: (direction) async{
-                                        todoList.removeAt(index);
-                                        context.read(listStateProvider).removeValue(index);
+                                      onDismissed: (direction) async {
+                                        context
+                                            .read(listStateProvider)
+                                            .removeValue(index);
                                         await CloudNotes().deleteAtIndex(index);
                                       },
                                       child: CustomContainer(
@@ -358,7 +330,6 @@ class _HomePageState extends State<HomePage>
                           child: Text('nothing'),
                         );
                       }
-
                     }),
                   ),
                 ],
@@ -372,13 +343,9 @@ class _HomePageState extends State<HomePage>
 
   @override
   void dispose() {
-    animationController.dispose();
     super.dispose();
+    animationController.dispose();
   }
-
-
-
-
 }
 
 class AddToDo extends StatefulWidget {
@@ -388,14 +355,19 @@ class AddToDo extends StatefulWidget {
 
 class _AddToDoState extends State<AddToDo> {
   final TextEditingController _todoText = TextEditingController();
+  String randomWord;
 
-  final String randomWord = RandomWords.getRandomWord();
+  @override
+  void initState() {
+    super.initState();
+    randomWord = RandomWords.getRandomWord();
+  }
+
   bool checkValue = false;
   final _formKey = GlobalKey<FormState>();
 
   setUpNotification(String payload) async {
     var tempJSON = json.decode(payload);
-
 
     final NotificationDetails platformChannelDetails =
         NotificationDetails(android: notificationDetails);
@@ -480,7 +452,8 @@ class _AddToDoState extends State<AddToDo> {
             onPressed: () => Navigator.pop(context), child: Text('Cancel')),
         FlatButton(
             onPressed: () async {
-              final sliderValueProvider = context.read(sliderProvider).sliderValue.round();
+              final sliderValueProvider =
+                  context.read(sliderProvider).sliderValue.round();
               // context.read(syncProgressProvider).setSyncing();
               DateTime _modelDateTime = context.read(dateTimeProvider).dateTime;
               // print(_modelDateTime);
@@ -543,10 +516,9 @@ class _AddToDoState extends State<AddToDo> {
               Navigator.pop(context, {
                 "task": _todoText.text,
                 "priority": sliderValueProvider,
-                "isDateSet" :checkValue,
+                "isDateSet": checkValue,
                 "dateTime": _modelDateTime ?? "NO"
               });
-              context.read(syncProgressProvider).syncProgressDone();
             },
             child: Text('ADD')),
       ],
@@ -558,7 +530,3 @@ class _AddToDoState extends State<AddToDo> {
     //Navigator.push(context, MaterialPageRoute(builder: (_) => EditNoteFromNotification(payload)));
   }
 }
-//
-// class _AddToDoState extends State<AddToDo> {
-//
-// }

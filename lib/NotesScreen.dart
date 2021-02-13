@@ -3,7 +3,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_app/CustomContainers.dart';
 import 'package:flutter_app/Drawer.dart';
 import 'package:flutter_app/RandomColors.dart';
-import 'package:flutter_app/main.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'providers.dart';
 import 'design.dart';

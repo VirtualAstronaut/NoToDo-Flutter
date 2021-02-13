@@ -9,7 +9,7 @@ import 'package:flutter_riverpod/all.dart';
 class ToDo {
   String task;
   int priority;
-  var dateTime;
+  dynamic dateTime;
   ToDo(this.task, this.priority, this.dateTime);
   ToDo.fromJson(Map<String, dynamic> json) {
     task = json['task'];
@@ -57,16 +57,15 @@ class MyList extends StateNotifier<List<ToDo>> {
   //   _tempDateTime = "NO";
   // }
 
-  dynamic getDateTimeAtIndex(int a) {
-    if (state[a].dateTime != "NO") {
-      return state[a].dateTime;
-    }
-    return "NO";
-  }
+  // dynamic getDateTimeAtIndex(int a) {
+  //   if (state[a].dateTime != "NO") {
+  //     return state[a].dateTime;
+  //   }
+  //   return "NO";
+  // }
 
   int addValue(String task, int priority, dynamic val) {
     // state = [...state, To(task, priority, val)];
-
     List<ToDo> tempList = state;
     int index = 0;
     if (tempList.isNotEmpty) {
@@ -128,8 +127,6 @@ class MyList extends StateNotifier<List<ToDo>> {
 
     state = [..._temp];
   }
-
-  static sortList() {}
 }
 
 class RandomWords {
