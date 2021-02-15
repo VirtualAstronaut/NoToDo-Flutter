@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:animations/animations.dart';
+import 'package:flutter_app/AddToDoScreen.dart';
 import 'package:flutter_app/connectivitychecker.dart';
 
 import 'package:flutter_app/models/ListHold.dart';
@@ -100,8 +101,6 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 //   }
 // }
 
-
-
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
@@ -113,11 +112,7 @@ class _HomePageState extends State<HomePage>
   AnimationController animationController;
   Animation<Color> animColors;
 
-  @override
-  void didChangeDependencies() {
-    context.dependOnInheritedWidgetOfExactType();
-    super.didChangeDependencies();
-  }
+  final scaffoldKey = GlobalKey<ScaffoldState>();
 
   Future<Map<String, dynamic>> getData(BuildContext context) async {
     var data;
@@ -188,17 +183,24 @@ class _HomePageState extends State<HomePage>
     final listProvider = context.read(listStateProvider);
     int index = listProvider.addValue(task, priority, _modelDateTime ?? "NO");
     final syncProviderVar = context.read(syncProvider);
-     await syncProviderVar.uploadToDo(
+    await syncProviderVar.uploadToDo(
         priority: priority,
         task: task,
         index: index,
         modelDateTime: _modelDateTime,
         tobeShownNotification: tobeShownNotification);
   }
-
+  void onClosed(AddToDoData data) async{
+    await saveToLocalorCloud(data.task, data.priority, data.datetime,data.tobeShownInNotification);
+  }
+  // action({String abc}) as{
+  //   await saveToLocalorCloud(task, priority, dateTime, isDateSet);
+  // }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: scaffoldKey,
+      extendBody: true,
       drawer: SideDrawer(
         isNotes: false,
       ),
@@ -210,11 +212,13 @@ class _HomePageState extends State<HomePage>
           builder: (context, watch, child) {
             final syncProgress = watch(syncProvider.state);
             if (!syncProgress) {
-              return const Text('To-Do List');
+              return const Text(
+                'To-Do List',
+              ).whiteText();
             } else {
               return Row(
                 children: [
-                  const Text('Syncing..'),
+                  const Text('Syncing..').blackText(),
                   Container(
                     margin: const EdgeInsets.only(left: 10),
                     width: 25,
@@ -230,18 +234,79 @@ class _HomePageState extends State<HomePage>
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.add),
-          onPressed: () async {
-            Map<String, dynamic> alertdataMap =
-                await showDialog(context: context, builder: (con) => AddToDo());
-            if (alertdataMap != null) {
-              String task = alertdataMap["task"];
-              int priority = alertdataMap["priority"];
-              bool isDateSet = alertdataMap["isDateSet"];
-              dynamic dateTime = alertdataMap["dateTime"];
-              await saveToLocalorCloud(task, priority, dateTime, isDateSet);
-            }
+// bottomNavigationBar: BottomAppBar(
+//
+//   child: Container(
+//     height: 50,
+//     child: Row(
+//       mainAxisSize: MainAxisSize.max,
+//       children: [
+//         Consumer(
+//           builder: (context, watch, child) {
+//             final syncProgress = watch(syncProvider.state);
+//             if (!syncProgress) {
+//               return  Row(
+//                 children: [
+//                    IconButton(icon: Icon(Icons.menu), onPressed: (){
+//                      scaffoldKey.currentState.openDrawer();
+//                    }),
+//                   const Text('To-Do List',style: TextStyle(fontWeight: FontWeight.w600, fontSize: 17),),
+//                 ],
+//               );
+//             } else {
+//               return Row(
+//                 children: [
+//                   IconButton(icon: Icon(Icons.menu), onPressed: (){
+//                     scaffoldKey.currentState.openDrawer();
+//                   }),
+//                   const Text('Syncing..'),
+//                   Container(
+//                     margin: const EdgeInsets.only(left: 10),
+//                     width: 25,
+//                     height: 25,
+//                     child: CircularProgressIndicator(
+//                       strokeWidth: 2,
+//                       valueColor: animColors,
+//                     ),
+//                   )
+//                 ],
+//               );
+//             }
+//           },
+//         ),
+//       ],
+//     ),
+//   ),
+//   shape: CircularNotchedRectangle(),
+//
+// ),
+//       floatingActionButtonLocation: FloatingActionButtonLocation.miniCenterDocked,
+      floatingActionButton: OpenContainer<AddToDoData>(
+          openColor: Colors.transparent,
+          closedColor: Colors.transparent,
+          closedShape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+          onClosed: onClosed,
+          closedBuilder: (context, action) {
+            return FloatingActionButton(
+                child: Icon(Icons.add), onPressed: action
+                // () async {
+
+                // Map<String, dynamic> alertdataMap =
+                // await showDialog(context: context, builder: (con) => AddToDo());
+                // if (alertdataMap != null) {
+                //   String task = alertdataMap["task"];
+                //   int priority = alertdataMap["priority"];
+                //   bool isDateSet = alertdataMap["isDateSet"];
+                //   dynamic dateTime = alertdataMap["dateTime"];
+                //   await saveToLocalorCloud(task,priority,dateTime,isDateSet);
+                // }
+                );
+          },
+          openBuilder: (context, action) {
+            return AddToDoScreen(
+              action: action,
+            );
           }),
       body: Column(
         children: [
@@ -304,9 +369,9 @@ class _HomePageState extends State<HomePage>
                                         DismissDirection.endToStart: 0.5
                                       },
                                       onDismissed: (direction) async {
-                                        context
-                                            .read(listStateProvider)
-                                            .removeValue(index);
+                                        todoList.removeAt(index);
+                                        print(context
+                                            .read(listStateProvider.state));
                                         await CloudNotes().deleteAtIndex(index);
                                       },
                                       child: CustomContainer(
@@ -529,4 +594,27 @@ class _AddToDoState extends State<AddToDo> {
     //TODO:Implement on tap handling of notification
     //Navigator.push(context, MaterialPageRoute(builder: (_) => EditNoteFromNotification(payload)));
   }
+}
+
+// class OpenContainerWrapper extends StatelessWidget{
+//   final OpenContainerBuilder closedBuilder;
+//   final  ClosedCallback<AddToDoData> onClosed;
+//   OpenContainerWrapper({this.closedBuilder, this.onClosed});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return OpenContainer<AddToDoData>(closedBuilder: (context, action) {
+//       return Container();
+//     }, openBuilder: (context, action) {
+//       return AddToDoScreen(action: action,);
+//     },)
+//   }
+// }
+class AddToDoData{
+  final String task;
+  final int priority;
+  final DateTime datetime;
+  final bool tobeShownInNotification;
+  AddToDoData({this.task, this.priority, this.datetime,this.tobeShownInNotification = false});
+
 }

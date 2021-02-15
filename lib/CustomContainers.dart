@@ -56,14 +56,15 @@ class CustomContainer extends StatelessWidget {
           child: Ink(
             decoration: BoxDecoration(
                 color: _color,
-                boxShadow: [
-                  const BoxShadow(
-                      color: Colors.black54,
-                      spreadRadius: 0.01,
-                      blurRadius: 25,
-                      offset: Offset(10, 10))
-                ],
-                borderRadius: BorderRadius.circular(10)),
+                // boxShadow: [
+                //    BoxShadow(
+                //       color: Colors.black54,
+                //       spreadRadius: 5,
+                //       blurRadius: 25,
+                //       offset: Offset(20, 10))
+                // ],
+                borderRadius: BorderRadius.circular(10)
+            ),
             child: Column(
               children: [
                 Container(

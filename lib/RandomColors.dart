@@ -9,8 +9,8 @@ class CustomColors {
       Color(0xFF546E7A); // this is taken directly from material Colors
   static const priorityFourColor = Color(0xFFD89030);
   static const priorityFiveColor = Color(0xFFF42F2F);
-
-  static const backgroundColor = Color(0xFF0C222D);
+  // Color(0xFF0C222D)
+  static final backgroundColor = Color(0xFF151515);
   static const List<Color> tileColors = [
     Color(0xFF45AAF0),
     Color(0xFF757575),
