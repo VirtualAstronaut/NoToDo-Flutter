@@ -13,7 +13,7 @@ class SaveToLocal {
 
   Future<File> _localFile() async {
     final path = await _localpath();
-    return File('$path/todoJSon.txt');
+    return File('$path/todo.txt');
   }
 
   Future<String> _localpath() async {
@@ -41,7 +41,10 @@ class SaveToLocal {
       jsonMap[i.toString()] = [
         tempList[i].task,
         tempList[i].priority,
-        tempList[i].dateTime.toString()
+        tempList[i].dateTime.toString(),
+        tempList[i].isNotificationScheduled,
+        tempList[i].notificationId,
+        tempList[i].ongoingNotificationId
       ];
     }
     return jsonMap;

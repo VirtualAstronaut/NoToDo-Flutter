@@ -12,4 +12,7 @@ class SliderUpdate with ChangeNotifier {
   resetSlider(){
     _sliderValue = 1.0;
   }
+  updateWithoutNotify( double value){
+    _sliderValue = value;
+  }
 }

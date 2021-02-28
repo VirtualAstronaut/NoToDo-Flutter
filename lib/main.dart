@@ -1,12 +1,17 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'MainScreen.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitDown,DeviceOrientation.portraitUp]);
   runApp(ProviderScope(child: MyApp()));
+
 }
 
 //providers
@@ -23,7 +28,7 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
 final AndroidInitializationSettings initializationSettingsAndroid =
-    AndroidInitializationSettings('avatar');
+    AndroidInitializationSettings('@mipmap/avatar');
 InitializationSettings initializationSettings =
     InitializationSettings(android: initializationSettingsAndroid);
 
@@ -36,11 +41,11 @@ final AndroidNotificationDetails notificationDetails =
   priority: Priority.high,
   showWhen: false,
   ongoing: true,
-  icon: 'avatar',
+      icon: '@mipmap/avatar'
 );
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

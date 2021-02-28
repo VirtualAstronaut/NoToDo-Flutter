@@ -23,7 +23,8 @@ class CustomTextFormInput extends StatelessWidget {
       this.icon,
       this.helperText,
       this.textColor,
-      this.borderColor, this.labelText});
+      this.borderColor,
+      this.labelText});
 
   @override
   Widget build(BuildContext context) {
@@ -34,17 +35,14 @@ class CustomTextFormInput extends StatelessWidget {
       cursorColor: textColor ?? Colors.white,
       style: TextStyle(color: textColor ?? Colors.white),
       decoration: InputDecoration(
-        labelText: labelText ,
-
-          labelStyle: TextStyle(color:  textColor ??Colors.white),
-
+          labelText: labelText,
+          labelStyle: TextStyle(color: textColor ?? Colors.white),
           helperText: helperText,
           helperStyle: TextStyle(color: textColor ?? Colors.white),
           floatingLabelBehavior: FloatingLabelBehavior.auto,
           errorBorder: UnderlineInputBorder(
               borderSide: BorderSide(color: Colors.red.shade500)),
           errorStyle: TextStyle(color: Colors.red.shade50),
-
           focusedBorder: UnderlineInputBorder(
               borderSide: BorderSide(color: borderColor ?? Colors.white)),
           enabledBorder: const UnderlineInputBorder(
@@ -77,15 +75,15 @@ extension CustomText on Text {
       style: const TextStyle(color: Colors.white),
     ));
   }
+
   Text blackText() {
     return Text(this.data, style: const TextStyle(color: Colors.black));
   }
 }
-class ConditionWidget extends StatelessWidget {
 
+class ConditionWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-    );
+    return Container();
   }
 }

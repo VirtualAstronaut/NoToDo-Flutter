@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import 'package:animations/animations.dart';
 import 'package:flutter_app/AddToDoScreen.dart';
 import 'package:flutter_app/connectivitychecker.dart';
@@ -20,7 +21,8 @@ import 'package:flutter_app/models/cloudModel.dart';
 import 'package:flutter_app/main.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/all.dart';
-
+import 'package:timezone/timezone.dart' as timezone;
+import 'package:timezone/data/latest.dart' as timezone;
 import 'design.dart';
 import 'savetojson.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -106,6 +108,8 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
+final listKey = GlobalKey<AnimatedListState>();
+
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   var listenFalseModel;
@@ -124,6 +128,7 @@ class _HomePageState extends State<HomePage>
 
   @override
   void initState() {
+    timezone.initializeTimeZones();
     if (!context.read(progressProvider).isDone) getDataAsync();
     animationController =
         AnimationController(vsync: this, duration: Duration(seconds: 3))
@@ -138,7 +143,7 @@ class _HomePageState extends State<HomePage>
       } else {
         if (ConnectivityStatus.isConnected) {
           ConnectivityStatus.setConnectivityStatus();
-          print('kekekkekekeee');
+
           syncWithCloud();
         }
       }
@@ -147,52 +152,55 @@ class _HomePageState extends State<HomePage>
   }
 
   Future<void> syncWithCloud() async {
-    await CloudNotes()
-        .syncLocalNotesWithCloud(context.read(listStateProvider.state));
+    // await CloudNotes()
+    //     .syncLocalNotesWithCloud(context.read(listStateProvider.state));
   }
 
   Future<void> getDataAsync() async {
     final sheetChecker = SheetChecker();
     if (await sheetChecker.isSheetSet() && ConnectivityStatus.isConnected) {
-      final todoList =
-          await CloudNotes().getNotes(await sheetChecker.getSheetID());
-      context.read(listStateProvider).addBatch(todoList);
+      // final todoList =
+      //     await CloudNotes().getNotes(await sheetChecker.getSheetID());
+      // context.read(listStateProvider).addBatch(todoList);
     } else {
       final localMapList = await SaveToLocal().readFromStorage().catchError(
           (onError) => context.read(progressProvider).setProgress());
       if (localMapList != null) {
         List<ToDo> todoList;
         todoList = localMapList.entries.map((element) {
-          return ToDo(element.value[0], element.value[1], element.value[2]);
+          return ToDo(element.value[0], element.value[1], element.value[2] != "NO"  ? DateTime.parse(element.value[2]) : "NO",
+              isNotificationScheduled: element.value[3],
+              notificationId: element.value[4],
+              ongoingNotificationId: element.value[5]);
         }).toList();
         todoList
             .sort((todoA, todoB) => todoB.priority.compareTo(todoA.priority));
         context.read(listStateProvider).addBatch(todoList);
       }
     }
+
     context.read(progressProvider).setProgress();
   }
 
-  Future<void> saveToLocalorCloud(
-    String task,
-    int priority,
-    dateTime,
-    bool tobeShownNotification,
-  ) async {
-    DateTime _modelDateTime = context.read(dateTimeProvider).dateTime;
-    final listProvider = context.read(listStateProvider);
-    int index = listProvider.addValue(task, priority, _modelDateTime ?? "NO");
+  Future<void> saveToLocalorCloud(String task, int priority, dateTime,
+      bool tobeShownNotification, bool isNotificationScheduled) async {
+    final DateTime _modelDateTime = context.read(dateTimeProvider).dateTime;
     final syncProviderVar = context.read(syncProvider);
     await syncProviderVar.uploadToDo(
         priority: priority,
         task: task,
-        index: index,
         modelDateTime: _modelDateTime,
+        isNotificationScheduled: isNotificationScheduled,
         tobeShownNotification: tobeShownNotification);
   }
-  void onClosed(AddToDoData data) async{
-    await saveToLocalorCloud(data.task, data.priority, data.datetime,data.tobeShownInNotification);
+
+  void onClosed(AddToDoData data) async {
+    if (data != null)
+      await saveToLocalorCloud(data.task, data.priority, data.datetime,
+          data.tobeShownInNotification, data.isNotificationScheduled);
+    context.read(dateTimeProvider).resetDate();
   }
+
   // action({String abc}) as{
   //   await saveToLocalorCloud(task, priority, dateTime, isDateSet);
   // }
@@ -201,9 +209,9 @@ class _HomePageState extends State<HomePage>
     return Scaffold(
       key: scaffoldKey,
       extendBody: true,
-      drawer: SideDrawer(
-        isNotes: false,
-      ),
+      // drawer: SideDrawer(
+      //   isNotes: false,
+      // ),
       backgroundColor: CustomColors.backgroundColor,
       appBar: AppBar(
         backgroundColor: CustomColors.backgroundColor,
@@ -218,7 +226,7 @@ class _HomePageState extends State<HomePage>
             } else {
               return Row(
                 children: [
-                  const Text('Syncing..').blackText(),
+                  const Text('Syncing..').whiteText(),
                   Container(
                     margin: const EdgeInsets.only(left: 10),
                     width: 25,
@@ -233,6 +241,27 @@ class _HomePageState extends State<HomePage>
             }
           },
         ),
+        actions: [
+          IconButton(
+              icon: Icon(
+                Icons.clear_all_rounded,
+                color: Colors.white,
+              ),
+              onPressed: () async{
+                showDialog(context: context,builder: (context) {
+                  return AlertDialog(
+                    backgroundColor: CustomColors.backgroundColor,
+                    title: Text('Clear All').whiteText(),actions: [
+                    FlatButton(onPressed: () {
+                      context.read(syncProvider).clearAll();
+                      Navigator.of(context).pop();
+                    }, child: Text('Yes').whiteText()),
+                    FlatButton(onPressed: () => Navigator.pop(context) , child: Text('No').whiteText())
+                  ],);
+                },);
+
+              })
+        ],
       ),
 // bottomNavigationBar: BottomAppBar(
 //
@@ -332,6 +361,8 @@ class _HomePageState extends State<HomePage>
                       } else if (progressModel && todoList.length != 0) {
                         return AnimationLimiter(
                           child: ListView.builder(
+                            physics: BouncingScrollPhysics(),
+                            key: listKey,
                             itemCount: todoList.length,
                             // itemCount: ,
                             itemBuilder: (context, index) {
@@ -369,10 +400,10 @@ class _HomePageState extends State<HomePage>
                                         DismissDirection.endToStart: 0.5
                                       },
                                       onDismissed: (direction) async {
-                                        todoList.removeAt(index);
-                                        print(context
-                                            .read(listStateProvider.state));
-                                        await CloudNotes().deleteAtIndex(index);
+                                       await context
+                                            .read(syncProvider)
+                                            .deleteLocalToDo(index);
+                                        // await CloudNotes().deleteAtIndex(index);
                                       },
                                       child: CustomContainer(
                                         todoList[index].task,
@@ -382,6 +413,9 @@ class _HomePageState extends State<HomePage>
                                         index,
                                         todoList[index].dateTime,
                                         priority: todoList[index].priority,
+                                        notificationId:
+                                            todoList[index].notificationId,
+                                        ongoingNotificationId: todoList[index].ongoingNotificationId,
                                       ),
                                     ),
                                   ),
@@ -610,11 +644,22 @@ class _AddToDoState extends State<AddToDo> {
 //     },)
 //   }
 // }
-class AddToDoData{
+class AddToDoData {
   final String task;
   final int priority;
-  final DateTime datetime;
+  final dynamic datetime;
+  final int index;
+  final int notificationId;
+  final int ongoingNotificationId;
+  final bool isNotificationScheduled;
   final bool tobeShownInNotification;
-  AddToDoData({this.task, this.priority, this.datetime,this.tobeShownInNotification = false});
-
+  AddToDoData(
+      {this.ongoingNotificationId,
+      this.notificationId,
+      this.task,
+      this.isNotificationScheduled,
+      this.priority,
+      this.index,
+      this.datetime,
+      this.tobeShownInNotification = false});
 }

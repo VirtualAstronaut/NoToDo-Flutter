@@ -44,7 +44,8 @@ class SideDrawer extends StatelessWidget {
                     ),
                     title: Text("Notes").whiteText(),
                     onTap: () => Navigator.pushReplacement(context,
-                        MaterialPageRoute(builder: (_) => NotesScreen())))
+                        MaterialPageRoute(builder: (_) => NotesScreen()))
+            )
                 : ListTile(
                     leading: Icon(
                       Icons.notes_rounded,

@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Drawer.dart';
 import 'package:flutter_app/connectivitychecker.dart';
-
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter_app/RandomColors.dart';
 import 'package:flutter_app/design.dart';
 import 'package:flutter_app/models/ListHold.dart';
@@ -15,6 +15,7 @@ class SettingsScreen extends StatelessWidget {
   final TextEditingController sheetIDController = TextEditingController();
 
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -93,6 +94,7 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
             ),
+
           ],
         ),
       ),

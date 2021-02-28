@@ -1,21 +1,25 @@
-
 import 'dart:core';
 
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/all.dart';
 
-
 class ToDo {
   String task;
   int priority;
   dynamic dateTime;
-  ToDo(this.task, this.priority, this.dateTime);
-  ToDo.fromJson(Map<String, dynamic> json) {
-    task = json['task'];
-    priority = json['priority'];
-    dateTime = json['dateTime'];
-  }
+  final bool isNotificationScheduled;
+  final int ongoingNotificationId;
+  final int notificationId;
+  ToDo(this.task, this.priority, this.dateTime,
+      {this.ongoingNotificationId,
+      this.isNotificationScheduled,
+      this.notificationId});
+  // ToDo.fromJson(Map<String, dynamic> json) {
+  //   task = json['task'];
+  //   priority = json['priority'];
+  //   dateTime = json['dateTime'];
+  // }
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['task'] = task;
@@ -64,51 +68,66 @@ class MyList extends StateNotifier<List<ToDo>> {
   //   return "NO";
   // }
 
-  int addValue(String task, int priority, dynamic val) {
+  int addValue(
+      String task,
+      int priority,
+      dynamic val,
+      bool isNotificationScheduled,
+      int notificationId,
+      int ongoingNotificationId) {
+    //Todo: edit datetime after
     // state = [...state, To(task, priority, val)];
     List<ToDo> tempList = state;
     int index = 0;
-    if (tempList.isNotEmpty) {
-      bool ifSamePriorityElementExists =
-          tempList.indexWhere((element) => element.priority == priority) != -1;
-      if (ifSamePriorityElementExists) {
-        index = tempList.indexWhere((element) => element.priority == priority);
-        tempList.insert(
-          index ,
-            ToDo(task, priority, val));
-      } else {
-        index = tempList.indexWhere(
-                (element) => element.priority < priority);
-        bool isPriorityHigher = tempList.lastIndexWhere((element) => element.priority < priority ) != -1;
-        print(isPriorityHigher);
-        tempList.insert(
-            priority == 5 ? 0 : index ,
-            ToDo(task, priority, "NO"));
-      }
+    bool ifSamePriorityElementExists =
+        tempList.indexWhere((element) => element.priority == priority) != -1;
+    if (ifSamePriorityElementExists) {
+      index = tempList.indexWhere((element) => element.priority == priority);
+      tempList.insert(
+          index,
+          ToDo(task, priority, val ?? "NO",
+              isNotificationScheduled: isNotificationScheduled,
+              notificationId: notificationId,ongoingNotificationId: ongoingNotificationId));
     } else {
-      tempList.add(ToDo(task, priority, "NO"));
+      final tempIndex =
+          tempList.indexWhere((element) => element.priority < priority);
+      if (tempIndex != -1) {
+        // bool isPriorityHigher =
+        //     tempList.lastIndexWhere((element) => element.priority < priority) !=
+        //         -1;
+        index = tempIndex;
+        tempList.insert(
+            priority == 5 ? 0 : index,
+            ToDo(task, priority, val ?? "NO",
+                isNotificationScheduled: isNotificationScheduled,
+                notificationId: notificationId,ongoingNotificationId: ongoingNotificationId));
+      } else {
+        tempList.add(ToDo(task, priority, val ?? "NO",
+            isNotificationScheduled: isNotificationScheduled,
+            notificationId: notificationId,ongoingNotificationId: ongoingNotificationId));
+      }
     }
-    print (index);
     state = tempList;
-  return index;
+    return index;
   }
+
   addBatch(List<ToDo> todoList) {
-    for (int i = 0; i < todoList.length; i++) {
-      _todoList.add(
-          ToDo(todoList[i].task, todoList[i].priority, todoList[i].dateTime));
-
-      // if (todoList[i].dateTime != "NO") {
-      //   DateTime temp = DateTime.parse(todoList[i].dateTime);
-      //   if (temp.isAfter(DateTime.now())) {
-      //     _todoList.add(ToDO(
-      //         todoList[i].task, todoList[i].priority, todoList[i].dateTime));
-      //   }
-      // } else {
-      //
-      // }
-    }
-    state = _todoList;
-
+    state = todoList;
+    // for (int i = 0; i < todoList.length; i++) {
+    //   _todoList.add(
+    //       ToDo(todoList[i].task, todoList[i].priority, todoList[i].dateTime,isNotificationScheduled: todoList[i].isNotificationScheduled,notificationId: to));
+    //
+    //   // if (todoList[i].dateTime != "NO") {
+    //   //   DateTime temp = DateTime.parse(todoList[i].dateTime);
+    //   //   if (temp.isAfter(DateTime.now())) {
+    //   //     _todoList.add(ToDO(
+    //   //         todoList[i].task, todoList[i].priority, todoList[i].dateTime));
+    //   //   }
+    //   // } else {
+    //   //
+    //   // }
+    // }
+    // state = _todoList;
   }
 
   removeValue(int index) {
@@ -118,11 +137,21 @@ class MyList extends StateNotifier<List<ToDo>> {
     // notifyListeners();
   }
 
-  updateValue(int index, String task, int priority) {
+  removeAll() {
+    state = [];
+  }
+
+  updateValue(int index, String task, int priority, dynamic dateTime,
+      bool isNotificationScheduled, int notificationId,int ongoingNotificationId) {
     // var tempVal = _todoList[index].dateTime;
     List<ToDo> _temp = state;
+
     _temp.removeAt(index);
-    _temp.insert(index, ToDo(task, priority, "NO"));
+    _temp.insert(
+        index,
+        ToDo(task, priority, dateTime,
+            isNotificationScheduled: isNotificationScheduled,
+            notificationId: notificationId,ongoingNotificationId: ongoingNotificationId));
     _temp.sort((todoA, todoB) => todoB.priority.compareTo(todoA.priority));
 
     state = [..._temp];

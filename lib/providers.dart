@@ -12,6 +12,9 @@ final listStateProvider = StateNotifierProvider((ref) => MyList());
 final notesProvider = StateNotifierProvider((re) => NotesModel());
 final syncProvider = StateNotifierProvider((ref) => SyncHandler(ref.read));
 final sliderProvider = ChangeNotifierProvider((_) => SliderUpdate());
+
+final editSliderProvider = ChangeNotifierProvider((_) => SliderUpdate());
 final saveToLocalJSON = Provider((_) => SaveToLocal());
 final progressProvider = ChangeNotifierProvider((_) => ProgressProvider());
 final dateTimeProvider = ChangeNotifierProvider((ref) => DateTimeNotifier());
+final editDateTimeProvider = ChangeNotifierProvider((ref) => DateTimeNotifier());

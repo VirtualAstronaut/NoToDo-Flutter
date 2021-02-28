@@ -13,4 +13,7 @@ class DateTimeNotifier extends ChangeNotifier {
   resetDate() {
     _dateTime = null;
   }
+  updateWithoutNotify(DateTime dateTime){
+    _dateTime = dateTime;
+  }
 }
