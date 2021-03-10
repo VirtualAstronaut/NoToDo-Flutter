@@ -16,7 +16,7 @@ class CustomTextFormInput extends StatelessWidget {
   final Color borderColor;
   final String helperText;
   final String labelText;
-  CustomTextFormInput(
+  const CustomTextFormInput(
       {this.initialValue,
       this.validator,
       this.textEditingController,
@@ -65,7 +65,7 @@ UnderlineInputBorder underlineInputBorder() {
 
 extension CustomText on Text {
   Text whiteText() {
-    return Text(this.data, style: const TextStyle(color: Colors.white));
+    return  Text(this.data, style: const TextStyle(color: Colors.white));
   }
 
   Widget whiteCenterText() {

@@ -1,7 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/providers.dart';
-import 'package:flutter_riverpod/all.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'MainScreen.dart';
 import 'RandomColors.dart';
 import 'design.dart';
@@ -17,10 +17,9 @@ class AddToDoScreen extends StatelessWidget {
   });
 
   final formKey = GlobalKey<FormState>();
+  final scaffoldKey = GlobalKey<ScaffoldMessengerState>();
 
-  final scaffoldKey = GlobalKey<ScaffoldState>();
-  //TODO:add DateTIme logic
-  AddToDoScreen({this.action});
+ AddToDoScreen({@required this.action});
   @override
   Widget build(BuildContext context) {
     // final dateTime = watch(dateTimeProvider).dateTime;
@@ -29,7 +28,7 @@ class AddToDoScreen extends StatelessWidget {
       key: scaffoldKey,
       backgroundColor: CustomColors.backgroundColor,
       body: SingleChildScrollView(
-        physics: BouncingScrollPhysics(),
+        physics:const BouncingScrollPhysics(),
         child: Column(
           children: [
             Consumer(
@@ -44,28 +43,27 @@ class AddToDoScreen extends StatelessWidget {
                             CustomColors.tileColors[watch(colorProvider) - 1],
                         width: 2,
                       ))),
-                  duration: Duration(milliseconds: 100),
+                  duration:const  Duration(milliseconds: 100),
                   child: Container(
                     height: 120,
                     child: Stack(
-                      overflow: Overflow.visible,
-                      children: [
+                      clipBehavior: Clip.none, children: [
                         Container(
                             alignment: Alignment.bottomLeft,
-                            margin: EdgeInsets.symmetric(
+                            margin:const  EdgeInsets.symmetric(
                                 horizontal: 70, vertical: 25),
-                            child: Text(
+                            child: const Text(
                               'Add ToDO',
-                              style: const TextStyle(
+                              style:  TextStyle(
                                   fontSize: 25, color: Colors.white),
                             )),
                         Positioned(
                           child: AnimatedContainer(
-                            duration: Duration(milliseconds: 100),
+                            duration: const Duration(milliseconds: 100),
                             height: 50,
                             width: 50,
                             curve: Curves.easeIn,
-                            child: Icon(
+                            child: const Icon(
                               Icons.sticky_note_2_outlined,
                               color: Colors.white,
                             ),
@@ -84,7 +82,7 @@ class AddToDoScreen extends StatelessWidget {
               },
             ),
             Container(
-              margin: EdgeInsets.only(top: 40, left: 20, right: 20),
+              margin: const EdgeInsets.only(top: 40, left: 20, right: 20),
               child: Column(
                 children: [
                   Row(
@@ -104,7 +102,7 @@ class AddToDoScreen extends StatelessWidget {
                       Flexible(
                         child: Form(
                           key: formKey,
-                          child: CustomTextFormInput(
+                          child:  CustomTextFormInput(
                             borderColor: Colors.white,
                             labelText: "note",
                             validator: normalValidator,
@@ -116,14 +114,14 @@ class AddToDoScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(
+                const  SizedBox(
                     height: 20,
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Flexible(
-                        child: Text(
+                        child: const Text(
                           'Priority',
                           textAlign: TextAlign.end,
                           style: TextStyle(color: Colors.white),
@@ -152,7 +150,7 @@ class AddToDoScreen extends StatelessWidget {
                       )
                     ],
                   ),
-                  SizedBox(
+                 const SizedBox(
                     height: 20,
                   ),
                   Row(
@@ -175,12 +173,12 @@ class AddToDoScreen extends StatelessWidget {
                         flex: 4,
                       ),
                       Flexible(
-                        child: FlatButton(onPressed: () async {
+                        child: TextButton(onPressed: () async {
                           FocusScope.of(context).unfocus();
                           setDate(context);
                         }, child: Consumer(
                           builder: (context, watch, child) {
-                            return Text(watch(dateTimeProvider).dateTime == null
+                            return  Text(watch(dateTimeProvider).dateTime == null
                                     ? 'Pick Date (Optional)'
                                     : watch(dateTimeProvider)
                                         .dateTime
@@ -193,13 +191,13 @@ class AddToDoScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Show Ongoing Notification?').whiteText(),
+                     const  Text('Show Ongoing Notification?').whiteText(),
                       Consumer(
                         builder: (context, watch, child) {
                           return Theme(
@@ -220,14 +218,14 @@ class AddToDoScreen extends StatelessWidget {
                       )
                     ],
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 20,
                   ),
-                  FlatButton.icon(
+                  TextButton.icon(
                     onPressed: () {
-                    if(context.read(dateTimeProvider).dateTime.isBefore(DateTime.now())){
+                    if(context.read(dateTimeProvider).dateTime != null && context.read(dateTimeProvider).dateTime.isBefore(DateTime.now())){
                       scaffoldKey.currentState.showSnackBar(SnackBar(
-                        content: Text('Unfortunately, This app can\'t notify you in past :D').whiteText(),
+                        content:const  Text('Unfortunately, This app can\'t notify you in past :D').whiteText(),
                         backgroundColor: CustomColors.tileColors[
                         context.read(colorProvider) - 1],
                       ));}
@@ -252,12 +250,12 @@ class AddToDoScreen extends StatelessWidget {
                                       context.read(checkValueProvider).state));
                         }
                     },
-                    icon: Icon(
+                    icon:const Icon(
                       Icons.check,
                       color: Colors.white,
                     ),
-                    label: Text('Add').whiteText(),
-                    padding: EdgeInsets.all(20),
+                    label: const Text('Add').whiteText(),
+                    style: ButtonStyle(padding: MaterialStateProperty.all(const EdgeInsets.all(20))),
                     // color: Colors.blueAccent,
                   )
                 ],
@@ -329,7 +327,7 @@ class AddToDoScreen extends StatelessWidget {
             time.hour, time.minute);
         if (_tempVar.isBefore(DateTime.now()))
           scaffoldKey.currentState.showSnackBar(SnackBar(
-            content: Text('Unfortunately, This app can\'t notify you in past :D').whiteText(),
+            content: const Text('Unfortunately, This app can\'t notify you in past :D').whiteText(),
             backgroundColor: CustomColors.tileColors[
                 context.read(colorProvider) - 1],
           ));

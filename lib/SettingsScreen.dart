@@ -55,8 +55,10 @@ class SettingsScreen extends StatelessWidget {
                         textEditingController: sheetIDController,
                       ),
                     ),
-                    RaisedButton.icon(
-                        color: CustomColors.backgroundColor,
+                    OutlinedButton.icon(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(CustomColors.backgroundColor)
+                      ),
                         onLongPress: () async {
                           await SheetChecker().remoteSheet();
                           await SheetChecker().removeKey();
@@ -94,7 +96,22 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
             ),
-
+          FlatButton(onPressed: ()async{
+            final data = await SheetChecker().getSheetID();
+            showDialog(context: context,builder: (context){
+              return AlertDialog(
+                content: Container(
+                  width: 200,
+                  height: 200,
+                  child: QrImage(
+                    data:  data,
+                    size: 200,
+                    version: QrVersions.auto,
+                  ),
+                ),
+              );
+            });
+          }, child: Text('ok'))
           ],
         ),
       ),

@@ -73,17 +73,17 @@ class SyncHandler extends StateNotifier<bool> {
 
     int notificationIndex  = -1;
     int ongoingNotificationIndex = -1;
-    if (modelDateTime != null) {
-   notificationIndex =  await setupScheduledNotification(task, modelDateTime);
-    }
-    if (tobeShownNotification) {
-
-      final jsonVar = {
-        "1": [task,]
-      };
-      String temp = json.encode(jsonVar);
-      ongoingNotificationIndex =await   setUpNotification(temp);
-    }
+   //  if (modelDateTime != null) {
+   // notificationIndex =  await setupScheduledNotification(task, modelDateTime);
+   //  }
+   //  if (tobeShownNotification) {
+   //
+   //    final jsonVar = {
+   //      "1": [task,]
+   //    };
+   //    String temp = json.encode(jsonVar);
+   //    ongoingNotificationIndex =await   setUpNotification(temp);
+   //  }
     final listProvider =read(listStateProvider);
     int cloudIndex = listProvider.addValue(task, priority, modelDateTime ?? "NO",isNotificationScheduled,notificationIndex,ongoingNotificationIndex);
     await SaveToLocal().save(todoList);

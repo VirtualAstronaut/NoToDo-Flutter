@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,41 +9,37 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
+  await initVars();
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitDown,DeviceOrientation.portraitUp]);
+
   runApp(ProviderScope(child: MyApp()));
 
 }
 
-//providers
-// final notesProvider = ChangeNotifierProvider((_) => NotesModel());
-// final listProvider = ChangeNotifierProvider((_) => MyList());
+void initVars()async  {
 
-// final cloudTodoProvider = StreamProvider.autoDispose<List<ToDO>>((ref) async* {
-//   final channel = CloudNotes();
-//   await for (var value in channel.stream) {
-//     yield value;
-//   }
-// });
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
-
-final AndroidInitializationSettings initializationSettingsAndroid =
-    AndroidInitializationSettings('@mipmap/avatar');
-InitializationSettings initializationSettings =
-    InitializationSettings(android: initializationSettingsAndroid);
-
-final AndroidNotificationDetails notificationDetails =
-    AndroidNotificationDetails(
-  '0',
-  'Todo Notification',
-  'Shows Constant Notification',
-  importance: Importance.max,
-  priority: Priority.high,
-  showWhen: false,
-  ongoing: true,
-      icon: '@mipmap/avatar'
-);
+  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/avatar');
+  initializationSettings =
+      InitializationSettings(android: initializationSettingsAndroid);
+  notificationDetails =
+      AndroidNotificationDetails(
+          '0',
+          'Todo Notification',
+          'Shows Constant Notification',
+          importance: Importance.max,
+          priority: Priority.high,
+          showWhen: false,
+          ongoing: true,
+          icon: '@mipmap/avatar'
+      );
+}
+FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+AndroidInitializationSettings initializationSettingsAndroid ;
+InitializationSettings initializationSettings;
+AndroidNotificationDetails notificationDetails;
 
 class MyApp extends StatelessWidget {
 

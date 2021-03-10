@@ -3,13 +3,11 @@ import 'dart:convert';
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/design.dart';
-import 'package:flutter_app/models/syncmodel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_app/main.dart';
 import 'MainScreen.dart';
 import 'RandomColors.dart';
 import 'providers.dart';
-import 'package:flutter_riverpod/all.dart';
 
 class CustomContainer extends StatelessWidget {
   final String task;
@@ -47,7 +45,7 @@ class CustomContainer extends StatelessWidget {
         closedBuilder: (context, action) {
           return Material(
             color: Colors.transparent,
-            borderRadius: BorderRadius.all(Radius.circular(10)),
+            borderRadius:const BorderRadius.all(Radius.circular(10)),
             child: InkWell(
               radius: 10,
               splashColor: Colors.white54,
@@ -56,21 +54,14 @@ class CustomContainer extends StatelessWidget {
               child: Ink(
                 decoration: BoxDecoration(
                     color: _color,
-                    // boxShadow: [
-                    //    BoxShadow(
-                    //       color: Colors.black54,
-                    //       spreadRadius: 5,
-                    //       blurRadius: 25,
-                    //       offset: Offset(20, 10))
-                    // ],
-                    borderRadius: BorderRadius.circular(10)),
+                    borderRadius: const BorderRadius.all(Radius.circular(10))),
                 child: Column(
                   children: [
                     Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                             border: Border.all(color: Colors.transparent),
-                            borderRadius: BorderRadius.only(
+                            borderRadius:  const BorderRadius.only(
                                 topLeft: Radius.circular(10),
                                 topRight: Radius.circular(10))),
                         width: _width,
@@ -102,7 +93,7 @@ class CustomContainer extends StatelessWidget {
                           ],
                         )),
                     Container(
-                        padding: EdgeInsets.only(bottom: 10, left: 10),
+                        padding: const  EdgeInsets.only(bottom: 10, left: 10),
                         alignment: Alignment.centerLeft,
                         child: priority != null
                             ? Text(
@@ -266,7 +257,7 @@ class EditToDoScreen extends StatelessWidget {
   final int notificationId;
   final formKey = GlobalKey<FormState>();
   final ongoingNotificationId;
-  final scaffoldKey = GlobalKey<ScaffoldState>();
+  final scaffoldKey = GlobalKey<ScaffoldMessengerState>();
 
   EditToDoScreen(this.index, this.note, this._color, this.dateTime,
       {this.priority, this.action, this.notificationId, this.ongoingNotificationId});
@@ -295,11 +286,11 @@ class EditToDoScreen extends StatelessWidget {
                     color: CustomColors.tileColors[priority - 1],
                     width: 2,
                   ))),
-              duration: Duration(milliseconds: 400),
-              child: Container(
+              duration:  const Duration(milliseconds: 400),
+              child: SizedBox(
                 height: 120,
                 child: Stack(
-                  overflow: Overflow.visible,
+                  clipBehavior: Clip.none,
                   children: [
                     Container(
                         alignment: Alignment.bottomLeft,
@@ -327,7 +318,7 @@ class EditToDoScreen extends StatelessWidget {
               ),
             ),
             Container(
-              margin: EdgeInsets.only(top: 40, left: 20, right: 20),
+              margin:const EdgeInsets.only(top: 40, left: 20, right: 20),
               child: Column(
                 children: [
                   Row(
@@ -337,7 +328,7 @@ class EditToDoScreen extends StatelessWidget {
                         child: Container(
                             padding: EdgeInsets.only(top: 10),
                             margin: EdgeInsets.only(right: 10),
-                            child: Icon(
+                            child: const Icon(
                               Icons.notes_rounded,
                               size: 28,
                               color: Colors.white,
@@ -361,14 +352,14 @@ class EditToDoScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(
+                  const  SizedBox(
                     height: 20,
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Flexible(
-                        child: Text(
+                        child: const Text(
                           'Priority',
                           textAlign: TextAlign.end,
                           style: TextStyle(color: Colors.white),
@@ -396,7 +387,7 @@ class EditToDoScreen extends StatelessWidget {
                       )
                     ],
                   ),
-                  SizedBox(
+                  const  SizedBox(
                     height: 20,
                   ),
                   Row(
@@ -423,7 +414,7 @@ class EditToDoScreen extends StatelessWidget {
                         flex: 4,
                       ),
                       Flexible(
-                        child: FlatButton(onPressed: () async {
+                        child: TextButton(onPressed: () async {
                           FocusScope.of(context).unfocus();
                           setDate(context);
                         }, child: Consumer(
@@ -464,7 +455,7 @@ class EditToDoScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Show In Notification?').whiteText(),
+                      const Text('Show In Notification?').whiteText(),
                       Consumer(
                         builder: (context, watch, child) {
 
@@ -485,14 +476,14 @@ class EditToDoScreen extends StatelessWidget {
                       )
                     ],
                   ),
-                  SizedBox(
+                  const  SizedBox(
                     height: 30,
                   ),
-                  RaisedButton.icon(
+                  OutlinedButton.icon(
                     onPressed: () {
                       if(context.read(editDateTimeProvider).dateTime.isBefore(DateTime.now())){
                         scaffoldKey.currentState.showSnackBar(SnackBar(
-                          content: Text('Unfortunately, This app can\'t notify you in past :D').whiteText(),
+                          content: const Text('Unfortunately, This app can\'t notify you in past :D').whiteText(),
                           backgroundColor: CustomColors.tileColors[
                           context.read(editSliderProvider).sliderValue.toInt() - 1],
                         ));
@@ -520,12 +511,14 @@ class EditToDoScreen extends StatelessWidget {
                       }
 
                     },
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.check,
                       color: Colors.white,
                     ),
-                    label: Text('Update').whiteText(),
-                    color: _color,
+                    label:const  Text('Update').whiteText(),
+                   style: ButtonStyle(
+                     backgroundColor: MaterialStateProperty.all(_color),
+                   ),
                   )
                 ],
               ),
@@ -533,12 +526,12 @@ class EditToDoScreen extends StatelessWidget {
           ],
         ),
       ),
-      appBar: AppBar(
+      appBar:  AppBar(
         backgroundColor: CustomColors.backgroundColor,
         shadowColor: Colors.transparent,
         leading: IconButton(
           onPressed: action,
-          icon: Icon(
+          icon:const  Icon(
             Icons.arrow_back,
             color: Colors.white,
           ),

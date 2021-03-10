@@ -113,7 +113,7 @@ class CloudNotes {
     List<String> encNotes = [];
     for (int i = 0; i < todoList.length; i++) {
       encNotes.add(await getEncryptedString(
-          todoList[i].task, todoList[i].priority, todoList[i].dateTime));
+          todoList[i].task, todoList[i].priority, todoList[i].dateTime != "NO" ? todoList[i].dateTime.toString(): "NO",));
     }
     Dio dio = Dio();
 

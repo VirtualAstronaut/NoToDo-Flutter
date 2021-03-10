@@ -1,7 +1,7 @@
 
 import 'package:flutter_app/models/syncmodel.dart';
 import 'package:flutter_app/savetojson.dart';
-import 'package:flutter_riverpod/all.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'models/ListHold.dart';
 import 'models/NotesModel.dart';

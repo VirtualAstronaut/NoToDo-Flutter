@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/RandomColors.dart';
 
 class AnimatedColors {
-  static Animatable<Color> circleColor = TweenSequence([
+  static final Animatable<Color> circleColor = TweenSequence([
     TweenSequenceItem(
         weight: 1.0,
         tween: ColorTween(
