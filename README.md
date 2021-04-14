@@ -1,16 +1,21 @@
-# flutter_app
+# NoToDo - Not an Ordinary To-Do
 
-A new Flutter application.
+A Beautiful yet Secure Notes & Todo App for Android & Windows.
 
-## Getting Started
+## Why?
 
-This project is a starting point for a Flutter application.
+I wanted to learn some flutter concepts and state management so i started this project. It was probably gonna be basic todo 
+app but i felt some things should be added or were missing or i just added for learning/fun.
 
-A few resources to get you started if this is your first Flutter project:
+## Features
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+- [x] AES 128 bit encrypted by default
+- [x] Scheduling and Ongoing notifications
+- [x] No google services required on client side
+- [x] Self hosted (with google shit only right now)
+- [ ] Syncronized Notes & ToDo Notifications
+- [ ] Set expiry on Note
+- [ ] Share & Edit Note in Collabration ()
+- [ ] Share Note as Image
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## how to setup Google Sheets for Syncronization:
