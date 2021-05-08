@@ -19,3 +19,5 @@ app but i felt some things should be added or were missing or i just added for l
 - [ ] Share Note as Image
 
 ## how to setup Google Sheets for Syncronization:
+Create Empty sheet then open script editor and paste the code in googleSheet.gs with ID changed & Deploy it as web app .
+one link will be generated that you need to put in app
