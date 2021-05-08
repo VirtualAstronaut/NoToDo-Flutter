@@ -12,7 +12,7 @@ app but i felt some things should be added or were missing or i just added for l
 - [x] AES 128 bit encrypted by default
 - [x] Scheduling and Ongoing notifications
 - [x] No google services required on client side
-- [x] Self hosted (with google shit only right now)
+- [x] Self hosted (with google sheet only right now)
 - [ ] Syncronized Notes & ToDo Notifications
 - [ ] Set expiry on Note
 - [ ] Share & Edit Note in Collabration ()
